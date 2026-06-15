@@ -1,6 +1,8 @@
 mod types;
 use types::{Task, Command};
 use std::io::{ Write, stdin, stdout };
+use std::fs;
+use serde_json;
 
 fn add_new_task(description: &str, tasks: &mut Vec<Task>) {
     tasks.push(Task { description: description.to_string(), done: false });
@@ -107,10 +109,19 @@ fn execute_command(command: Command, tasks: &mut Vec<Task>) {
 
 // Optional
 
-// fn save_state() { }
-// fn load_state() { }
+fn save_state(tasks: &[Task], filename: &str) -> Result<(), Box<dyn std::error::Error >> {
+    let serialized = serde_json::to_string_pretty(tasks)?;
+    fs::write(filename, serialized)?;
+    Ok(())
+}
 
-fn testing(tasks: &mut Vec<Task>) {
+fn load_state(filename: &str) -> Result<Vec<Task>, Box<dyn std::error::Error>>  { 
+    let data = fs::read_to_string(filename)?;
+    let tasks: Vec<Task> = serde_json::from_str(&data)?;
+    Ok(tasks)
+}
+
+fn load_seed_data(tasks: &mut Vec<Task>) {
     let sample_tasks: Vec<&str> = vec![
         "No MEFP", "Limited Screentime", "Meditation", 
         "Journaling"
@@ -121,18 +132,29 @@ fn testing(tasks: &mut Vec<Task>) {
     }
     complete_task(1,tasks);
     complete_task(3,tasks);
-    
+}
+
+fn testing(filename: &str, tasks: &mut Vec<Task>) {
+   
     print_help(tasks);
     let user_input = get_user_input("Enter Command [CHAR]: "); 
     let command: Command = parse_command(&user_input);
     execute_command(command,tasks); 
     execute_command(Command::List, tasks);
+    let _ = save_state(tasks, filename);
 }
 
 
 
 fn main() {
-    let mut tasks: Vec<Task> = vec![];
-    testing(&mut tasks);
+    let filename: &str = "tasks.json";
+    let mut tasks: Vec<Task> = match load_state(filename) {
+        Ok(tasks) => tasks,
+        Err(_) => vec![]
+    };
+    if tasks.is_empty() {
+        load_seed_data(&mut tasks);
+    }
+    testing(filename, &mut tasks);
 
 }

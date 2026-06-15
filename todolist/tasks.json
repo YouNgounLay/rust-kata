@@ -1,0 +1,22 @@
+[
+  {
+    "description": "No MEFP",
+    "done": false
+  },
+  {
+    "description": "Limited Screentime",
+    "done": true
+  },
+  {
+    "description": "Meditation",
+    "done": false
+  },
+  {
+    "description": "Journaling",
+    "done": true
+  },
+  {
+    "description": "Stop doomscrolling\n",
+    "done": false
+  }
+]
