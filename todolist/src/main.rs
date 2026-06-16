@@ -9,6 +9,8 @@ fn add_new_task(description: &str, tasks: &mut Vec<Task>) {
 }
 
 fn print_tasks(tasks: &[Task]) {
+    let mut line = String::new(); 
+    /*
     for (i, task) in tasks.iter().enumerate() {
         let completion_status: &str = if task.done { "Complete" } else { "Ongoing" };
         println!(
@@ -16,6 +18,12 @@ fn print_tasks(tasks: &[Task]) {
             i+1, completion_status  , task.description
         );
     }
+    */
+    tasks.iter().enumerate().for_each(|(i, task)| {
+        let completion_status: &str = if task.done { "Complete" } else { "Ongoing" };
+        line.push_str(&format!("{:0>2} ({}):\t{}\n", i+1, completion_status, task.description));
+    });
+    println!("{}", line);
 }
 
 fn print_commands() {
