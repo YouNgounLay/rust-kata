@@ -1,7 +1,7 @@
 [
   {
     "description": "No MEFP",
-    "done": false
+    "done": true
   },
   {
     "description": "Limited Screentime",
@@ -9,7 +9,7 @@
   },
   {
     "description": "Meditation",
-    "done": false
+    "done": true
   },
   {
     "description": "Journaling",

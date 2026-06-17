@@ -1,8 +1,10 @@
 mod types;
+mod error_types;
 use types::{Task, Command};
 use std::io::{ Write, stdin, stdout };
 use std::fs;
 use serde_json;
+use error_types::ParseError;
 
 fn add_new_task(description: &str, tasks: &mut Vec<Task>) {
     tasks.push(Task { description: description.to_string(), done: false });
@@ -64,34 +66,31 @@ fn get_user_input(text: &str) -> String {
 }
 
 
-fn parse_command(input: &str) -> Command {
+fn parse_command(input: &str) -> Result<Command, ParseError> {
     match input.to_lowercase().trim() {
         "add" => {
             let extra_input: String = get_user_input("\nEnter description: ");    
             if extra_input.is_empty() { 
                 println!("!!! Please provide a valid description !!!");
-                Command::Quit
+                Err(ParseError::EmptyInput)
             } else {
-                Command::Add(extra_input)
+                Ok(Command::Add(extra_input))
             }
         },
-        "list" => Command::List,
+        "list" => Ok(Command::List),
         "done" => {
             let extra_input: String = get_user_input("\nEnter a task number [1->X]: ");    
-            let extra_input: usize = match extra_input.parse() {
-                Ok(num) => num, 
-                Err(_) =>  {
-                    println!("!!! Please provide a valid NUMBER !!!");
-                    0 
-                }
+            println!("{}", extra_input);
+            return match extra_input.trim().parse() {
+                Ok(num) => Ok(Command::Done(num)), 
+                Err(_) => Err(ParseError::InvalidNumber),
             };
             
-            return if extra_input == 0 {Command::Quit} else {Command::Done(extra_input)}
         },
-        "quit" => Command::Quit,
+        "quit" => Ok(Command::Quit),
         _ => { 
             println!("\n!!! Unknown Command !!!");
-            Command::Quit
+            Err(ParseError::UnknownCommand)
         }
     }
 }
@@ -146,9 +145,10 @@ fn testing(filename: &str, tasks: &mut Vec<Task>) {
    
     print_help(tasks);
     let user_input = get_user_input("Enter Command [CHAR]: "); 
-    let command: Command = parse_command(&user_input);
-    execute_command(command,tasks); 
-    execute_command(Command::List, tasks);
+    let _command = match parse_command(&user_input) {
+    Ok(cmd) => execute_command(cmd, tasks),
+    Err(e) => println!("Error: {}", e),
+    };
     let _ = save_state(tasks, filename);
 }
 
