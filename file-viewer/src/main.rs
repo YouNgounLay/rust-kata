@@ -1,8 +1,10 @@
 // use std::fs;
+use std::io::{self, Write, stdout};
 use std::error::Error;
 use crossterm::terminal::{ enable_raw_mode, disable_raw_mode };
 use crossterm::event::{ read, Event, KeyCode };  // This is used for handling keyevent read
 use crossterm::terminal::size;
+use crossterm::{execute, cursor, terminal::{Clear, ClearType}}; 
 
 
 /*
@@ -18,12 +20,24 @@ fn testing() {
 }
 */
 
+fn clear_screen() -> io::Result<()> {
+    execute!(io::stdout(), Clear(ClearType::All))?;
+    Ok(())
+}
+
 
 fn main() -> Result<(), Box<dyn Error>> {
     let (col, row) = size()?;
     println!("Col: {}\tRow: {}", col, row);
     
     enable_raw_mode()?; 
+    let _ = clear_screen();
+    let mut stdout = stdout();
+    execute!(stdout, cursor::MoveTo(5,5)).unwrap();    
+    execute!(stdout, cursor::MoveTo(10,10)).unwrap();    
+    execute!(stdout, cursor::MoveTo(15,15)).unwrap();    
+
+
     'main_loop: loop {
     match read()? { 
         Event::Key(key_event) => {
@@ -33,10 +47,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     break 'main_loop; 
                 },
                 KeyCode::Enter => println!("Enter Pressed!"),
-                KeyCode::Up => println!("Up Pressed!"),
-                KeyCode::Down  => println!("Down Pressed!"),
-                KeyCode::Left => println!("Left Pressed!"),
-                KeyCode::Right => println!("Right Pressed!"),
+                KeyCode::Up => execute!(stdout, cursor::MoveTo(0, 0)).unwrap(),
+                KeyCode::Down  => execute!(stdout, cursor::MoveTo(0,5)).unwrap(),
+                KeyCode::Left => execute!(stdout, cursor::MoveTo(5,0)).unwrap(),
+                KeyCode::Right => execute!(stdout, cursor::MoveTo(10,0)).unwrap(),
                 KeyCode::CapsLock => println!("CapsLock Pressed!"),
                 _ => println!("Hello World!"),
             };
@@ -44,6 +58,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         _ => println!("Hello World!"),
     };
     }
+    
     
     disable_raw_mode()?;
     Ok(())
